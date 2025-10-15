@@ -29,13 +29,21 @@ export async function createAuth() {
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        // Make sure this matches your backend
         redirectURI: `${
           process.env.BASE_URL || "http://localhost:5000"
         }/api/auth/callback/google`,
       },
     },
 
-    trustedOrigins: [process.env.CLIENT_URL || "http://localhost:5173"],
+    // CRITICAL: This should be your FRONTEND URL
+    // This is where Better Auth redirects after OAuth
+    baseURL: process.env.CLIENT_URL || "http://localhost:5173",
+
+    trustedOrigins: [
+      process.env.CLIENT_URL || "http://localhost:5173",
+      process.env.BASE_URL || "http://localhost:5000",
+    ],
 
     session: {
       expiresIn: 60 * 60 * 24 * 7,
