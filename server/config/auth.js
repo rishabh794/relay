@@ -1,26 +1,29 @@
-export async function createAuth() {
-  const { betterAuth } = await import("better-auth");
-  const { mongodbAdapter } = await import("better-auth/adapters/mongodb");
-  const { MongoClient } = await import("mongodb");
+import { betterAuth } from "better-auth";
+import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { MongoClient } from "mongodb";
 
+export async function createAuth() {
   const uri = process.env.MONGO_URI;
-  if (!uri) {
-    throw new Error("MONGO_URI is required for better-auth");
-  }
+  if (!uri) throw new Error("MONGO_URI is required");
 
   const client = new MongoClient(uri);
   await client.connect();
   const db = client.db("relay");
-  console.log("ℹ️ Initializing better-auth (Google OAuth only)");
 
-  process.on("exit", () => {
-    try {
-      client.close();
-    } catch (e) {}
+  console.log("✅ Better Auth initialized");
+
+  process.on("SIGINT", async () => {
+    await client.close();
+    process.exit(0);
   });
 
   return betterAuth({
     database: mongodbAdapter(db, { client }),
+
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: false,
+    },
 
     socialProviders: {
       google: {
@@ -32,25 +35,20 @@ export async function createAuth() {
       },
     },
 
-    trustedOrigins: [process.env.CLIENT_URL || "http://localhost:3000"],
+    trustedOrigins: [process.env.CLIENT_URL || "http://localhost:5173"],
 
-    callbacks: {
-      async onSignIn({ user, account }) {
-        const { default: User } = await import("../models/userModel.js");
+    session: {
+      expiresIn: 60 * 60 * 24 * 7,
+      updateAge: 60 * 60 * 24,
+    },
 
-        const existingUser = await User.findOne({ email: user.email });
-
-        if (!existingUser) {
-          await User.create({
-            email: user.email,
-            name: user.name,
-            provider: "google",
-            providerId: account.providerAccountId,
-          });
-          console.log(`✅ Created user in custom DB: ${user.email}`);
-        }
-
-        return { user };
+    user: {
+      additionalFields: {
+        phoneNumber: {
+          type: "string",
+          required: true,
+          unique: true,
+        },
       },
     },
   });
