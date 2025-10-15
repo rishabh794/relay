@@ -9,7 +9,7 @@ const registerUser = async (req, res) => {
     throw new Error("Please add all fields");
   }
 
-  const userExists = await User.findOne({ email });
+  const userExists = await User.findOne({ $or: [{ email }, { mobile }] });
 
   if (userExists) {
     res.status(400);
@@ -37,14 +37,16 @@ const registerUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { identifier, password } = req.body;
 
-  if (!email || !password) {
+  if (!identifier || !password) {
     res.status(400);
-    throw new Error("Please provide email and password");
+    throw new Error("Please provide identifier and password");
   }
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({
+    $or: [{ email: identifier }, { mobile: identifier }],
+  });
 
   if (user && (await user.matchPassword(password))) {
     res.json({
@@ -55,7 +57,7 @@ const loginUser = async (req, res) => {
     });
   } else {
     res.status(401);
-    throw new Error("Invalid email or password");
+    throw new Error("Invalid credentials");
   }
 };
 
