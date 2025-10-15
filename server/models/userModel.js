@@ -19,13 +19,25 @@ const userSchema = mongoose.Schema(
     },
     mobile: {
       type: String,
-      required: [true, "Please provide a mobile number"],
-      unique: true,
+      required: function () {
+        return this.provider === "local";
+      },
     },
     password: {
       type: String,
-      required: [true, "Please provide a password"],
-      minLength: [6, "Password must be at least 8 characters"],
+      required: function () {
+        return this.provider === "local";
+      },
+      minLength: [6, "Password must be at least 6 characters"],
+    },
+    provider: {
+      type: String,
+      enum: ["local", "google", "facebook"],
+      default: "local",
+    },
+    providerId: {
+      type: String,
+      default: null,
     },
   },
   {
@@ -33,8 +45,10 @@ const userSchema = mongoose.Schema(
   }
 );
 
+userSchema.index({ mobile: 1 }, { unique: true, sparse: true });
+
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
+  if (!this.password || !this.isModified("password")) {
     return next();
   }
   const salt = await bcrypt.genSalt(10);
@@ -43,9 +57,10 @@ userSchema.pre("save", async function (next) {
 });
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
+  if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 export default User;

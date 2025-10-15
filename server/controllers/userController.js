@@ -21,6 +21,7 @@ const registerUser = async (req, res) => {
     email,
     mobile,
     password,
+    provider: "local",
   });
 
   if (user) {
