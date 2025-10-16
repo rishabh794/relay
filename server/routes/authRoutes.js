@@ -6,6 +6,17 @@ import {
 } from "../middleware/phoneAuthMiddleware.js";
 import User from "../models/userModel.js";
 import Message from "../models/messageModel.js";
+import { v2 as cloudinary } from "cloudinary";
+import multer from "multer";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 export function createAuthRoutes(auth) {
   const router = express.Router();
@@ -82,11 +93,37 @@ export function createAuthRoutes(auth) {
           { sender: currentUserId, receiver: otherUserId },
           { sender: otherUserId, receiver: currentUserId },
         ],
-      }).sort({ createdAt: "asc" });
+      })
+        .sort({ createdAt: "asc" })
+        .populate("sender", "name");
 
       res.json(messages);
     } catch (error) {
       res.status(500).json({ message: "Failed to get messages" });
+    }
+  });
+
+  router.post("/upload", upload.single("file"), async (req, res) => {
+    try {
+      const session = await auth.api.getSession({ headers: req.headers });
+      if (!session?.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded." });
+      }
+
+      const b64 = Buffer.from(req.file.buffer).toString("base64");
+      let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+      const result = await cloudinary.uploader.upload(dataURI, {
+        resource_type: "auto",
+      });
+
+      res.status(200).json({ url: result.secure_url });
+    } catch (error) {
+      console.error("Upload error:", error);
+      res.status(500).json({ message: "File upload failed" });
     }
   });
 

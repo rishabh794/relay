@@ -25,7 +25,7 @@ export const initializeSocket = (io, auth) => {
     );
     onlineUsers.set(socket.user.id, socket.id);
 
-    socket.on("sendMessage", async ({ receiverId, content }) => {
+    socket.on("sendMessage", async ({ receiverId, content, fileUrl }) => {
       try {
         if (!socket.user?.id || !receiverId) {
           throw new Error("Invalid sender or receiver ID.");
@@ -34,7 +34,8 @@ export const initializeSocket = (io, auth) => {
         const newMessage = await Message.create({
           sender: socket.user.id,
           receiver: receiverId,
-          content,
+          content: content || null,
+          fileUrl: fileUrl || null,
         });
 
         const populatedMessage = await Message.findById(newMessage._id)
