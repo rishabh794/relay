@@ -38,6 +38,9 @@ export function createAuth() {
     },
 
     user: {
+      deleteUser: {
+        enabled: true,
+      },
       additionalFields: {
         phoneNumber: {
           type: "string",

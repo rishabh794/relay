@@ -127,6 +127,109 @@ export function createAuthRoutes(auth) {
     }
   });
 
+  router.patch("/users/update", async (req, res) => {
+    try {
+      const session = await auth.api.getSession({ headers: req.headers });
+      if (!session?.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { name, email, image, phoneNumber } = req.body;
+      const updateData = {};
+
+      if (phoneNumber) {
+        const cleanedPhone = phoneNumber.replace(/\D/g, "");
+
+        if (cleanedPhone.length < 10 || cleanedPhone.length > 15) {
+          return res.status(400).json({
+            message: "Invalid phone number format. Must be 10-15 digits.",
+          });
+        }
+
+        const normalizedPhone = `+${cleanedPhone}`;
+
+        const existingPhone = await User.findOne({
+          phoneNumber: normalizedPhone,
+          _id: { $ne: session.user.id },
+        });
+
+        if (existingPhone) {
+          return res.status(400).json({
+            message: "Phone number already in use",
+          });
+        }
+
+        updateData.phoneNumber = normalizedPhone;
+      }
+
+      if (email && email !== session.user.email) {
+        const existingEmail = await User.findOne({
+          email: email.toLowerCase(),
+          _id: { $ne: session.user.id },
+        });
+
+        if (existingEmail) {
+          return res.status(400).json({
+            message: "Email already in use",
+          });
+        }
+
+        updateData.email = email.toLowerCase();
+      }
+
+      if (name) updateData.name = name;
+      if (image) updateData.image = image;
+
+      const updatedUser = await User.findByIdAndUpdate(
+        session.user.id,
+        updateData,
+        { new: true, runValidators: true }
+      ).select("name email image phoneNumber");
+
+      if (name || image) {
+        await auth.api.updateUser({
+          body: { name, image },
+          headers: req.headers,
+        });
+      }
+
+      res.json({
+        message: "Profile updated successfully",
+        user: updatedUser,
+      });
+    } catch (error) {
+      console.error("Update error:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  router.delete("/users/delete", async (req, res) => {
+    try {
+      const session = await auth.api.getSession({ headers: req.headers });
+      if (!session?.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const userId = session.user.id;
+
+      await Message.deleteMany({
+        $or: [{ sender: userId }, { receiver: userId }],
+      });
+
+      await auth.api.deleteUser({
+        headers: req.headers,
+        body: { userId: userId },
+      });
+
+      await User.findByIdAndDelete(userId);
+
+      res.json({ message: "Account deleted successfully" });
+    } catch (error) {
+      console.error("Delete error:", error);
+      res.status(500).json({ message: "Failed to delete account" });
+    }
+  });
+
   return router;
 }
 

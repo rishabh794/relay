@@ -5,6 +5,7 @@ import SignupPage from './pages/SignupPage';
 import { useAuth } from './context/useAuth';
 import ChatPage from './pages/ChatPage'; 
 import ProtectedRoute from './components/ProtectedRoute';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   const { user, signOut, isLoading } = useAuth();
@@ -24,7 +25,8 @@ function App() {
       <nav style={{ padding: '10px', borderBottom: '1-px solid #ccc' }}>
         {user ? (
           <>
-            <Link to="/">Home</Link> | <span>Welcome, {user.name}! </span> | <Link to="/chat">Chat</Link>
+            <Link to="/">Home</Link> | <Link to="/chat">Chat</Link> | <Link to="/profile">Profile</Link>
+            <span>Welcome, {user.name}! </span> 
             <button onClick={handleLogout} style={{ marginLeft: '10px' }}>Logout</button>
           </>
         ) : (
@@ -43,6 +45,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ChatPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />
