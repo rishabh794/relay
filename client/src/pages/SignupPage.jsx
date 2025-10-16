@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/useAuth';
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +10,7 @@ const SignupPage = () => {
     phoneNumber: '',
   });
   const navigate = useNavigate();
+  const { signUpEmail , updateUser } = useAuth();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,17 +18,13 @@ const SignupPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post(
-        'http://localhost:5000/api/auth/sign-up/email',
-        formData
-      );
-      console.log('Signup successful:', response.data);
-      alert('Signup successful! Please log in.');
-      navigate('/login'); 
-    } catch (error) {
-      console.error('Signup failed:', error.response.data);
-      alert('Signup failed: ' + error.response.data.message);
+    const { error } = await signUpEmail(formData);
+
+    if (error) {
+      alert('Signup failed: ' + error.message);
+    } else {
+      await updateUser();
+      navigate('/');
     }
   };
 

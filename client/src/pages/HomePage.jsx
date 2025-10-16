@@ -19,9 +19,6 @@ const HomePage = () => {
     <div>
       <h1>Home Page</h1>
       <p>If you just logged in with Google, your token is in the console and saved!</p>
-      <Link to="/login">Go to Login Page</Link>
-      <br />
-      <Link to="/signup">Go to Signup Page</Link>
     </div>
   );
 };

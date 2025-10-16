@@ -1,14 +1,10 @@
-import { createAuthClient } from 'better-auth/client';
+import { useAuth } from '../context/useAuth';
 
 const GoogleLoginButton = () => {
-  const authClient = createAuthClient({
-    baseURL: 'http://localhost:5000',
-  });
+  const { signInSocial } = useAuth();
 
   const handleGoogleLogin = async () => {
-    await authClient.signIn.social({
-      provider: 'google',
-    });
+    await signInSocial('google');
   };
 
   return (
