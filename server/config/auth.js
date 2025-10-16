@@ -1,21 +1,12 @@
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import { MongoClient } from "mongodb";
+import { getDB, getMongoClient } from "./db.js";
 
-export async function createAuth() {
-  const uri = process.env.MONGO_URI;
-  if (!uri) throw new Error("MONGO_URI is required");
+export function createAuth() {
+  const db = getDB();
+  const client = getMongoClient();
 
-  const client = new MongoClient(uri);
-  await client.connect();
-  const db = client.db("relay");
-
-  console.log("✅ Better Auth initialized");
-
-  process.on("SIGINT", async () => {
-    await client.close();
-    process.exit(0);
-  });
+  console.log("✅ Better Auth initialized with shared Mongoose connection");
 
   return betterAuth({
     database: mongodbAdapter(db, { client }),
@@ -29,9 +20,7 @@ export async function createAuth() {
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        redirectURI: `${
-          process.env.BASE_URL || "http://localhost:5000"
-        }/api/auth/callback/google`,
+        redirectURI: `${process.env.BASE_URL}/api/auth/callback/google`,
         prompt: "consent",
       },
     },
