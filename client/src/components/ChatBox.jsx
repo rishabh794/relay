@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/useAuth';
 import io from 'socket.io-client';
 import axios from 'axios';
+import moment from 'moment';
 
 const ChatBox = ({ selectedUser }) => {
   const { user } = useAuth();
@@ -140,6 +141,9 @@ const ChatBox = ({ selectedUser }) => {
               boxShadow: '0 1px 1px rgba(0,0,0,0.1)',
             }}>
               {renderMessageContent(msg)}
+              <div style={{ fontSize: '0.7rem', color: '#888', textAlign: 'right', marginTop: '4px' }}>
+      {moment(msg.createdAt).format('h:mm A')} 
+    </div>
             </div>
           </div>
         ))}
