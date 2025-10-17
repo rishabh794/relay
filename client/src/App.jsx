@@ -38,7 +38,7 @@ function App() {
             <div className="flex items-center">
               <Link to="/" className="flex items-center space-x-2">
                 <MessageSquare className="w-8 h-8 text-indigo-600" />
-                <span className="text-xl font-bold text-gray-900">ChatApp</span>
+                <span className="text-xl font-bold text-gray-900">Relay</span>
               </Link>
             </div>
 

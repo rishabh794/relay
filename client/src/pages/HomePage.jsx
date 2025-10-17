@@ -28,7 +28,7 @@ const HomePage = () => {
             </div>
             
             <h1 className="text-5xl font-bold text-gray-900 mb-4">
-              Welcome to ChatApp
+              Welcome to Relay
             </h1>
             
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -82,7 +82,7 @@ const HomePage = () => {
       <div className="border-t border-gray-200 bg-white mt-16">
         <div className="container mx-auto px-4 py-6">
           <p className="text-center text-sm text-gray-600">
-            © 2025 ChatApp. All rights reserved.
+            © 2025 Relay. All rights reserved.
           </p>
         </div>
       </div>
