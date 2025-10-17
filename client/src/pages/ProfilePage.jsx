@@ -35,7 +35,7 @@ const ProfilePage = () => {
     e.preventDefault();
     try {
       const { data } = await axios.patch(
-        'http://localhost:5000/api/users/update',
+        `${import.meta.env.VITE_API_URL}/api/users/update`,
         formData,
         { withCredentials: true }
       );
@@ -50,7 +50,7 @@ const ProfilePage = () => {
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete your account? This will delete all your messages and cannot be undone.")) {
       try {
-        await axios.delete('http://localhost:5000/api/users/delete', { withCredentials: true });
+        await axios.delete(`${import.meta.env.VITE_API_URL}/api/users/delete`, { withCredentials: true });
         addToast('Account deleted successfully', 'success');
         await signOut();
         navigate('/login');

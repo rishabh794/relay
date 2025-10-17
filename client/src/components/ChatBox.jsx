@@ -14,7 +14,7 @@ const ChatBox = ({ selectedUser }) => {
   const { toasts, addToast, removeToast } = useToast();
 
   useEffect(() => {
-    socket.current = io('http://localhost:5000', { withCredentials: true });
+    socket.current = io(`${import.meta.env.VITE_API_URL}`, { withCredentials: true });
 
     socket.current.on('receiveMessage', (message) => {
       if (message.sender._id === selectedUser?._id || message.sender._id === user.id) {
@@ -33,7 +33,7 @@ const ChatBox = ({ selectedUser }) => {
 
   useEffect(() => {
     if (selectedUser) {
-      axios.get(`http://localhost:5000/api/messages/${selectedUser._id}`, { withCredentials: true })
+      axios.get(`${import.meta.env.VITE_API_URL}/api/messages/${selectedUser._id}`, { withCredentials: true })
         .then(res => setMessages(res.data))
         .catch(err => console.error("Failed to fetch messages", err));
     }
@@ -47,7 +47,7 @@ const ChatBox = ({ selectedUser }) => {
       const formData = new FormData();
       formData.append('file', file);
       try {
-        const { data } = await axios.post('http://localhost:5000/api/upload', formData, { withCredentials: true });
+        const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload`, formData, { withCredentials: true });
         fileUrl = data.url;
         fileType = data.fileType;
         fileName = data.fileName;
