@@ -1,3 +1,7 @@
+import { betterAuth } from "better-auth";
+import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { getDB, getMongoClient } from "./db.js";
+
 export function createAuth() {
   const db = getDB();
   const client = getMongoClient();
