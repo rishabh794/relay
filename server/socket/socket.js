@@ -26,47 +26,49 @@ export const initializeSocket = (io, auth) => {
     );
     onlineUsers.set(socket.user.id, socket.id);
 
-    socket.on("sendMessage", async ({ receiverId, content, fileUrl }) => {
-      try {
-        if (!socket.user?.id || !receiverId) {
-          throw new Error("Invalid sender or receiver ID.");
+    socket.on(
+      "sendMessage",
+      async ({
+        receiverId,
+        content,
+        fileUrl = null,
+        fileType = null,
+        fileName = null,
+        fileSize = null,
+      }) => {
+        try {
+          const newMessage = await Message.create({
+            sender: socket.user.id,
+            receiver: receiverId,
+            content: content || "",
+            fileUrl,
+            fileType,
+            fileName,
+            fileSize,
+          });
+
+          const populatedMessage = await Message.findById(newMessage._id)
+            .populate("sender", "name image")
+            .populate("receiver", "name image");
+
+          const receiverSocketId = onlineUsers.get(receiverId);
+          if (receiverSocketId) {
+            io.to(receiverSocketId).emit("receiveMessage", populatedMessage);
+          }
+          socket.emit("receiveMessage", populatedMessage);
+        } catch (error) {
+          console.error("❌ SOCKET: CRITICAL ERROR sending message:", error);
+          socket.emit("sendMessageError", {
+            message: "Could not send message.",
+          });
         }
-
-        const newMessage = await Message.create({
-          sender: socket.user.id,
-          receiver: receiverId,
-          content: content,
-          fileUrl: fileUrl,
-          fileType: fileType,
-          fileName: fileName,
-          fileSize: fileSize,
-        });
-
-        const populatedMessage = await Message.findById(newMessage._id)
-          .populate("sender", "name image")
-          .populate("receiver", "name image");
-
-        const receiverSocketId = onlineUsers.get(receiverId);
-
-        if (receiverSocketId) {
-          io.to(receiverSocketId).emit("receiveMessage", populatedMessage);
-        }
-        socket.emit("receiveMessage", populatedMessage);
-      } catch (error) {
-        console.error("❌ SOCKET: Error sending message:", error.message);
-        socket.emit("sendMessageError", { message: "Could not send message." });
       }
-    });
+    );
 
     socket.on("deleteMessage", async ({ messageId }) => {
       try {
         const message = await Message.findById(messageId);
-
-        if (!message) return;
-
-        if (message.sender.toString() !== socket.user.id) {
-          return;
-        }
+        if (!message || message.sender.toString() !== socket.user.id) return;
 
         await Message.findByIdAndDelete(messageId);
 
