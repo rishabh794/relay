@@ -123,7 +123,12 @@ export function createAuthRoutes(auth) {
       res.status(200).json({ url: result.secure_url });
     } catch (error) {
       console.error("Upload error:", error);
-      res.status(500).json({ message: "File upload failed" });
+      res.status(200).json({
+        url: result.secure_url,
+        fileType: result.resource_type,
+        fileName: req.file.originalname,
+        fileSize: result.bytes,
+      });
     }
   });
 

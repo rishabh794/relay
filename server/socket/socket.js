@@ -19,6 +19,7 @@ export const initializeSocket = (io, auth) => {
       next(new Error("Authentication error"));
     }
   });
+
   io.on("connection", (socket) => {
     console.log(
       `✅ User connected: ${socket.user.name} (ID: ${socket.user.id})`
@@ -34,8 +35,11 @@ export const initializeSocket = (io, auth) => {
         const newMessage = await Message.create({
           sender: socket.user.id,
           receiver: receiverId,
-          content: content || null,
-          fileUrl: fileUrl || null,
+          content: content,
+          fileUrl: fileUrl,
+          fileType: fileType,
+          fileName: fileName,
+          fileSize: fileSize,
         });
 
         const populatedMessage = await Message.findById(newMessage._id)
