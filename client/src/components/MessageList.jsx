@@ -1,21 +1,23 @@
-import { useEffect, useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import MessageBubble from './MessageBubble';
 
 const MessageList = ({ messages, currentUser, onDeleteMessage }) => {
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  useEffect(scrollToBottom, [messages]);
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   return (
-    <div style={{ flexGrow: 1, padding: '10px', overflowY: 'auto' }}>
-      {messages.map((msg) => (
+    <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-br from-gray-50 to-blue-50">
+      {messages.map((message) => (
         <MessageBubble
-          key={msg._id}
-          message={msg}
+          key={message._id}
+          message={message}
           currentUser={currentUser}
           onDelete={onDeleteMessage}
         />

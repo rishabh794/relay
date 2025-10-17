@@ -4,11 +4,14 @@ import io from 'socket.io-client';
 import axios from 'axios';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
+import { useToast } from '../hooks/useToast';
+import ToastContainer from './ToastContainer';
 
 const ChatBox = ({ selectedUser }) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const socket = useRef(null);
+  const { toasts, addToast, removeToast } = useToast();
 
   useEffect(() => {
     socket.current = io('http://localhost:5000', { withCredentials: true });
@@ -51,7 +54,7 @@ const ChatBox = ({ selectedUser }) => {
         fileSize = data.fileSize;
       } catch (error) {
         console.error('File upload failed', error);
-        alert('File upload failed!');
+        addToast('File upload failed', 'error');
         return;
       }
     }
@@ -67,19 +70,31 @@ const ChatBox = ({ selectedUser }) => {
   };
 
   const handleDeleteMessage = (messageId) => {
-    if (window.confirm("Delete this message?")) {
-      socket.current.emit('deleteMessage', { messageId });
-    }
+    socket.current.emit('deleteMessage', { messageId });
+    addToast('Message deleted', 'success');
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="flex flex-col h-full bg-white">
+      <div className="p-4 border-b border-gray-200 bg-white shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-semibold text-white">
+            {selectedUser.name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900">{selectedUser.name}</h3>
+            <p className="text-sm text-gray-600">{selectedUser.email}</p>
+          </div>
+        </div>
+      </div>
+
       <MessageList
         messages={messages}
         currentUser={user}
         onDeleteMessage={handleDeleteMessage}
       />
       <MessageInput onSendMessage={handleSendMessage} />
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 };
