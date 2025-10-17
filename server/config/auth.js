@@ -25,7 +25,7 @@ export function createAuth() {
       },
     },
 
-    baseURL: process.env.CLIENT_URL || "http://localhost:5173",
+    baseURL: process.env.BASE_URL || "http://localhost:5000",
 
     trustedOrigins: [
       process.env.CLIENT_URL || "http://localhost:5173",
@@ -35,6 +35,13 @@ export function createAuth() {
     session: {
       expiresIn: 60 * 60 * 24 * 7,
       updateAge: 60 * 60 * 24,
+    },
+
+    advanced: {
+      cookies: {
+        secure: true,
+        sameSite: "none",
+      },
     },
 
     user: {
