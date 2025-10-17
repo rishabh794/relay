@@ -1,7 +1,3 @@
-import { betterAuth } from "better-auth";
-import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import { getDB, getMongoClient } from "./db.js";
-
 export function createAuth() {
   const db = getDB();
   const client = getMongoClient();
@@ -35,13 +31,17 @@ export function createAuth() {
     session: {
       expiresIn: 60 * 60 * 24 * 7,
       updateAge: 60 * 60 * 24,
+      cookieCache: {
+        enabled: true,
+        maxAge: 60 * 5,
+      },
     },
 
-    advanced: {
-      cookies: {
-        secure: true,
-        sameSite: "none",
-      },
+    cookie: {
+      secure: true,
+      sameSite: "none",
+      httpOnly: true,
+      path: "/",
     },
 
     user: {
@@ -58,5 +58,3 @@ export function createAuth() {
     },
   });
 }
-
-export default createAuth;
