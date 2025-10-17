@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-const MessageBubble = ({ message, currentUser }) => {
+const MessageBubble = ({ message, currentUser, onDelete }) => {
   const isSender = message.sender._id === currentUser.id;
 
   const renderMessageContent = (msg) => {
@@ -35,11 +35,30 @@ const MessageBubble = ({ message, currentUser }) => {
         maxWidth: '70%',
         wordWrap: 'break-word',
         boxShadow: '0 1px 1px rgba(0,0,0,0.1)',
+        position: 'relative',
       }}>
         {renderMessageContent(message)}
         <div style={{ fontSize: '0.7rem', color: '#888', textAlign: 'right', marginTop: '4px' }}>
           {moment(message.createdAt).format('h:mm A')}
         </div>
+        
+        {isSender && (
+          <button
+            onClick={() => onDelete(message._id)}
+            style={{
+              position: 'absolute',
+              top: '2px',
+              right: '2px',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#999',
+              fontSize: '0.8rem',
+            }}
+          >
+            X
+          </button>
+        )}
       </div>
     </div>
   );

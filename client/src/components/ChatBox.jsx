@@ -19,6 +19,12 @@ const ChatBox = ({ selectedUser }) => {
       }
     });
 
+    socket.current.on('messageDeleted', ({ messageId }) => {
+      setMessages((prevMessages) =>
+        prevMessages.filter((msg) => msg._id !== messageId)
+      );
+    });
+
     return () => socket.current.disconnect();
   }, [selectedUser, user.id]);
 
@@ -60,9 +66,19 @@ const ChatBox = ({ selectedUser }) => {
     });
   };
 
+  const handleDeleteMessage = (messageId) => {
+    if (window.confirm("Delete this message?")) {
+      socket.current.emit('deleteMessage', { messageId });
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <MessageList messages={messages} currentUser={user} />
+      <MessageList
+        messages={messages}
+        currentUser={user}
+        onDeleteMessage={handleDeleteMessage}
+      />
       <MessageInput onSendMessage={handleSendMessage} />
     </div>
   );

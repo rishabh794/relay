@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import MessageBubble from './MessageBubble';
 
-const MessageList = ({ messages, currentUser }) => {
+const MessageList = ({ messages, currentUser, onDeleteMessage }) => {
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -13,7 +13,12 @@ const MessageList = ({ messages, currentUser }) => {
   return (
     <div style={{ flexGrow: 1, padding: '10px', overflowY: 'auto' }}>
       {messages.map((msg) => (
-        <MessageBubble key={msg._id} message={msg} currentUser={currentUser} />
+        <MessageBubble
+          key={msg._id}
+          message={msg}
+          currentUser={currentUser}
+          onDelete={onDeleteMessage}
+        />
       ))}
       <div ref={messagesEndRef} />
     </div>
